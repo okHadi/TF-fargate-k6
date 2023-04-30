@@ -2,21 +2,25 @@ provider "aws" {
   region = "ap-northeast-1"
 }
 
+data "aws_iam_policy" "ecs_task_execution_policy" {
+  arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
 
+data "aws_iam_policy" "cloudwatch_logs_full_access_policy" {
+  arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+}
 
 resource "aws_iam_policy_attachment" "ecs_task_execution_policy_attachment" {
   name       = "ecs_task_execution_policy_attachment"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+  policy_arn = data.aws_iam_policy.ecs_task_execution_policy.arn
   roles      = ["ecsTaskExecutionRole"]
 }
 
 resource "aws_iam_policy_attachment" "cloudwatch_logs_full_access_policy_attachment" {
   name       = "cloudwatch_logs_full_access_policy_attachment"
-  policy_arn = "arn:aws:iam::aws:policy/CloudWatchLogsFullAccess"
+  policy_arn = data.aws_iam_policy.cloudwatch_logs_full_access_policy.arn
   roles      = ["ecsTaskExecutionRole"]
 }
-
-
 
 resource "aws_ecs_task_definition" "k6TF" {
   family                   = "k6TF"
@@ -44,9 +48,7 @@ resource "aws_ecs_task_definition" "k6TF" {
     operating_system_family = "LINUX"
     cpu_architecture        = "X86_64"
   }
-
 }
-
 
 resource "aws_ecs_cluster" "k6TFCluster" {
   name = "k6TFCluster"
